@@ -3,6 +3,7 @@ import { CustomTools } from '../../src/models/CustomTools';
 import { mockClient } from '../utils/mocks/client.mock';
 import { toolMocks } from '../utils/mocks/data.mock';
 import ComposioClient from '@composio/client';
+import { z as z4 } from 'zod';
 import { z } from 'zod/v3';
 import { ComposioToolNotFoundError } from '../../src/errors/ToolErrors';
 import { ComposioConnectedAccountNotFoundError } from '../../src/errors/ConnectedAccountsErrors';
@@ -46,6 +47,28 @@ describe('CustomTools', () => {
       const registryTool = await customTools.getCustomToolBySlug(toolOptions.slug);
       expect(registryTool).toBeDefined();
       expect(registryTool?.slug).toEqual(toolOptions.slug);
+    });
+
+    it('should create a custom tool from a Zod v4 schema', async () => {
+      const result = await customTools.createTool({
+        ...toolOptions,
+        slug: 'ZOD4_CUSTOM_TOOL',
+        inputParams: z4.object({
+          query: z4.string().describe('The search query'),
+          limit: z4.number().optional(),
+          category: z4.string().default('all'),
+        }),
+      });
+
+      expect(result.inputParameters).toMatchObject({
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'The search query' },
+          limit: { type: 'number' },
+          category: expect.objectContaining({ type: 'string', default: 'all' }),
+        },
+        required: ['query'],
+      });
     });
 
     it('should throw an error for invalid tool options', async () => {

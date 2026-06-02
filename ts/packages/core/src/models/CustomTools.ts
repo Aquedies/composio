@@ -10,9 +10,7 @@ import {
   CustomToolInputParameter,
   CustomToolOptions,
   CustomToolRegistry,
-  InputParamsSchema,
 } from '../types/customTool.types';
-import * as zodToJsonSchema from 'zod-to-json-schema';
 import {
   Tool,
   ToolExecuteParams,
@@ -33,6 +31,7 @@ import { ValidationError } from '../errors';
 import { transformConnectedAccountResponse } from '../utils/transformers/connectedAccounts';
 import { ConnectionData } from '../types/connectedAccountAuthStates.types';
 import { AuthSchemeTypes } from '../types/authConfigs.types';
+import { zodObjectSchemaToJsonSchema } from '../utils/zodSchema';
 
 export class CustomTools {
   private readonly client: ComposioClient;
@@ -81,10 +80,7 @@ export class CustomTools {
       throw new Error('Invalid tool options');
     }
     // generate the input parameters schema
-    const paramsSchema: InputParamsSchema = zodToJsonSchema.default(inputParams, {
-      name: 'input',
-    }) as InputParamsSchema;
-    const paramsSchemaJson = paramsSchema.definitions.input;
+    const paramsSchemaJson = zodObjectSchemaToJsonSchema(inputParams, 'input');
     const toolSchema: Tool = {
       name: name,
       slug: slug,
